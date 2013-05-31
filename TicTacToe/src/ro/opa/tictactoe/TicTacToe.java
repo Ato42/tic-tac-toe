@@ -1,3 +1,29 @@
+/**
+Copyright (c) 2013, Mihai Cirneala (mihai.cirneala@gmail.com, http://m.opa.ro)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package ro.opa.tictactoe;
 
 import java.awt.Color;
@@ -23,7 +49,7 @@ public class TicTacToe implements ActionListener {
 	public static String LETTER_PLAYER_O = "O";
 	private Boolean win;
 	private Boolean visible = false;
-	private Boolean computer = false;
+	private Player computerPlayer;
 
 	public TicTacToe(Integer size, Integer winSize) {
 		this.gameSize = size;
@@ -52,11 +78,24 @@ public class TicTacToe implements ActionListener {
 		window.setVisible(true);
 		visible = true;
 	}
+	
+	/* Make The Window Visible */
+	public void initAIPlayer() {
+		window.setVisible(true);
+		visible = true;
+	}
 
 	public void actionPerformed(ActionEvent a) {
+		if (computerPlayer != null) {
+			computerGameActionPerformed(a);
+		} else {
+			toggledGameActionPerformed(a);
+		}
+	}
+	
+	public void computerGameActionPerformed(ActionEvent a) {
 		
-		//int player = movesCount % 2 == 0 ? Board.PLAYER_X : Board.PLAYER_O;
-		//String letter = movesCount % 2 == 0 ? LETTER_PLAYER_X : LETTER_PLAYER_O;
+		// user's turn
 		renderMove(a, LETTER_PLAYER_X);
 		win = checkWins(a, Board.PLAYER_X);
 		renderCheckWins(a);
@@ -66,19 +105,20 @@ public class TicTacToe implements ActionListener {
 		}
 		
 		// computer's turn
-		
-		MinimaxPlayer mmPlayer = new MinimaxPlayer(this);
-		int[] move = mmPlayer.move();
-		JButton button = buttonsMatrix.get(move[0]).get(move[1]);
-		button.setText(LETTER_PLAYER_O);
-		button.setEnabled(false);
-		board.getMatrix()[move[0]][move[1]] = Board.PLAYER_O;
+		computerPlayer.setMatrix(board.getMatrix());
+		int[] move = computerPlayer.move();
+		if (move[0] >= 0 && move[0] >= 0) {
+			JButton button = buttonsMatrix.get(move[0]).get(move[1]);
+			button.setText(LETTER_PLAYER_O);
+			button.setEnabled(false);
+			board.getMatrix()[move[0]][move[1]] = Board.PLAYER_O;
+		}
 		win = checkWins(a, Board.PLAYER_O);
 		renderCheckWins(a);
 		movesCount++;
 	}
 
-	public void toggleActionPerformed(ActionEvent a) {
+	public void toggledGameActionPerformed(ActionEvent a) {
 		String letter = movesCount % 2 == 0 ? LETTER_PLAYER_X : LETTER_PLAYER_O;
 		renderMove(a, letter);
 		int player = movesCount % 2 == 0 ? Board.PLAYER_X : Board.PLAYER_O;
@@ -186,17 +226,17 @@ public class TicTacToe implements ActionListener {
 		return win;
 	}
 	
-	private boolean checkWins(ActionEvent a, int player) {
-		boolean win = false;
+	public boolean checkWins(ActionEvent a, int player) {
+		boolean isWin = false;
 		for (int i = 0; i < gameSize; i++) {
 			for (int j = 0; j < gameSize; j++) {
 				if (checkWinsFromPosition(a, player, i, j)) {
-					win = true;
+					isWin = true;
 					break;
 				}
 			}
 		}
-		return win;
+		return isWin;
 	}
 	
 	public ArrayList<ArrayList<JButton>> getButtonsMatrix() {
@@ -219,21 +259,30 @@ public class TicTacToe implements ActionListener {
 		return win;
 	}
 
-	public Boolean getComputer() {
-		return computer;
+	public Player getComputerPlayer() {
+		return computerPlayer;
 	}
 
-	public void setComputer(Boolean computer) {
-		this.computer = computer;
+	public void setComputerPlayer(Player computerPlayer) {
+		this.computerPlayer = computerPlayer;
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
-		TicTacToe ttt = new TicTacToe(3, 3);
-		ttt.setComputer(true);
+		
+		int gameSize = 12; 		/* the size of the matrix */
+		int gameWinSize = 5; 	/* the size for x-in-a-line to win */
+		
+		if (args != null & args.length > 0) {
+			gameSize = Integer.parseInt(args[0]);
+			gameWinSize = Integer.parseInt(args[1]);
+		}
+		
+		TicTacToe ttt = new TicTacToe(gameSize, gameWinSize);
+		MinimaxPlayer mmPlayer = new MinimaxPlayer(gameSize, gameWinSize);
+		ttt.setComputerPlayer(mmPlayer);
 		ttt.show();
 
 	}

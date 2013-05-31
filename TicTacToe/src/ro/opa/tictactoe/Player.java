@@ -25,24 +25,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package ro.opa.tictactoe;
 
-public class Board {
+public abstract class Player {
+
+	protected Integer[][] matrix;
+	protected Integer gameSize;
+	protected Integer gameWinSize;
+
+	public Player(Integer gameSize, Integer gameWinSize, Integer[][] matrix) {
+		this.gameSize = gameSize;
+		this.gameWinSize = gameWinSize;
+		this.matrix = matrix;
+	}
 	
-	private Integer[][] matrix;
+	public Player(Integer gameSize, Integer gameWinSize) {
+		this.gameSize = gameSize;
+		this.gameWinSize = gameWinSize;
+	}
 	
-	public static final int EMPTY = 0;
-	
-	public static final int PLAYER_X = 1;
-	
-	public static final int PLAYER_O = 2;
-	
-	public Board(Integer size) {
-		matrix = new Integer[size][size];
-		for (int i=0; i<size; i++) {
-			for (int j=0; j<size; j++) {
-				matrix[i][j] = Board.EMPTY;
+	public Player(TicTacToe ticTacToe) {
+		System.out.println("AI initialized");
+		this.gameSize = ticTacToe.getGameSize();
+		this.gameWinSize = ticTacToe.getGameWinSize();
+		this.matrix = new Integer[gameSize][gameSize];
+		for (int i = 0; i < gameSize; i++) {
+			for (int j = 0; j < gameSize; j++) {
+				matrix[i][j] = ticTacToe.getBoard().getMatrix()[i][j];
 			}
 		}
 	}
+	
+	public abstract int[] move();
 
 	public Integer[][] getMatrix() {
 		return matrix;
@@ -51,25 +63,21 @@ public class Board {
 	public void setMatrix(Integer[][] matrix) {
 		this.matrix = matrix;
 	}
-	
-	public static int getOtherPlayer(int player) {
-		int otherPlayer = 0;
-		if (player == Board.PLAYER_O) {
-			otherPlayer = Board.PLAYER_X;
-		} else if (player == Board.PLAYER_X) {
-			otherPlayer = Board.PLAYER_O;
-		}
-		return otherPlayer;
+
+	public Integer getGameSize() {
+		return gameSize;
 	}
-	
-	public static String getLetter(int player) {
-		String letter = "";
-		if (player == Board.PLAYER_O) {
-			letter = TicTacToe.LETTER_PLAYER_O;
-		} else if (player == Board.PLAYER_X) {
-			letter = TicTacToe.LETTER_PLAYER_X;
-		}
-		return letter;
+
+	public void setGameSize(Integer gameSize) {
+		this.gameSize = gameSize;
+	}
+
+	public Integer getGameWinSize() {
+		return gameWinSize;
+	}
+
+	public void setGameWinSize(Integer gameWinSize) {
+		this.gameWinSize = gameWinSize;
 	}
 
 }
